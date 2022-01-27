@@ -77,6 +77,7 @@
                 protobuf3_12
                 dtc
                 packages.gcc-arm-linux-gnueabi
+                qemu
               ];
           };
     });
