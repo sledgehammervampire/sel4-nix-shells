@@ -1,5 +1,5 @@
 {
-  description = "sel4 development shells";
+  description = "seL4 development shells";
 
   inputs = {
     nixpkgs.url = github:nixos/nixpkgs/nixos-21.11;
@@ -52,33 +52,37 @@
           })
           { };
       };
-      devShell =
-        with pkgs;
-        mkShell
-          {
-            buildInputs =
-              let
-                myPython = (import mach-nix { inherit pkgs; python = "python39"; }).mkPython {
-                  requirements = ''
-                    sel4-deps
-                    setuptools
-                    protobuf==3.12.4
-                  '';
-                };
-              in
-              [
-                myPython
-                bashInteractive
-                gcc
-                ccache
-                cmake
-                ninja
-                libxml2
-                protobuf3_12
-                dtc
-                packages.gcc-arm-linux-gnueabi
-                qemu
-              ];
+      devShells = with pkgs;
+        let
+          myPython = (import mach-nix { inherit pkgs; python = "python39"; }).mkPython {
+            requirements = ''
+              setuptools
+              protobuf==3.12.4
+              camkes-deps
+              nose
+            '';
+            providers.unittest2 = "nixpkgs";
           };
+          sel4-deps = [
+            myPython
+            bashInteractive
+            gcc
+            ccache
+            cmake
+            ninja
+            libxml2
+            protobuf3_12
+            dtc
+            packages.gcc-arm-linux-gnueabi
+            qemu
+          ];
+          camkes-deps = sel4-deps ++ [
+          ];
+        in
+        {
+          sel4 = mkShell { buildInputs = sel4-deps; };
+          camkes = mkShell { buildInputs = camkes-deps; };
+        };
+      devShell = devShells.camkes;
     });
 }
