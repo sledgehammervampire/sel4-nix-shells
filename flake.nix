@@ -62,6 +62,7 @@
               nose
             '';
             providers.unittest2 = "nixpkgs";
+            providers.libarchive-c = "nixpkgs";
           };
           sel4-deps = [
             myPython
@@ -77,6 +78,7 @@
             qemu
           ];
           camkes-deps = sel4-deps ++ [
+            stack
           ];
         in
         {
