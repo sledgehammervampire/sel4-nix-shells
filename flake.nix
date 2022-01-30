@@ -21,6 +21,7 @@
     in
     rec {
       packages = {
+        inherit (pkgs) isabelle;
         # package description ripped off from gcc-arm-embedded
         gcc-arm-linux-gnueabi = pkgs.callPackage
           ({ stdenv, fetchurl, lib, ncurses5, python27, expat }: stdenv.mkDerivation rec {
@@ -80,10 +81,16 @@
           camkes-deps = sel4-deps ++ [
             stack
           ];
+          l4v-deps = camkes-deps ++ [
+            mlton
+            packages.isabelle
+            texlive.combined.scheme-full
+          ];
         in
         {
           sel4 = mkShell { buildInputs = sel4-deps; };
           camkes = mkShell { buildInputs = camkes-deps; };
+          l4v = mkShell { buildInputs = l4v-deps; };
         };
       devShell = devShells.camkes;
     });
