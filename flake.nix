@@ -77,6 +77,7 @@
             dtc
             packages.gcc-arm-linux-gnueabi
             qemu
+            astyle
           ];
           camkes-deps = sel4-deps ++ [
             stack
