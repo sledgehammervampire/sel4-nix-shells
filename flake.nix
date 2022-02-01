@@ -6,6 +6,7 @@
     mach-nix.url = github:DavHau/mach-nix;
     flake-utils.url = github:numtide/flake-utils;
     nixpkgs-master.url = github:nixos/nixpkgs/master;
+    nixpkgs-1000teslas.url = github:1000teslas/nixpkgs/isabelle;
   };
 
   outputs =
@@ -14,6 +15,7 @@
     , mach-nix
     , flake-utils
     , nixpkgs-master
+    , nixpkgs-1000teslas
     }:
     flake-utils.lib.eachDefaultSystem (system:
     let
@@ -23,26 +25,13 @@
       pkgs-master = import nixpkgs-master {
         inherit system;
       };
+      pkgs-1000teslas = import nixpkgs-1000teslas {
+        inherit system;
+      };
     in
     rec {
       packages = {
-        isabelle = with pkgs-master; callPackage ./isabelle.nix {
-          polyml = polyml.overrideAttrs (_: {
-            configureFlags = [ "--enable-intinf-as-int" "--with-gmp" "--disable-shared" ];
-            buildFlags = [ "compiler" ];
-            version = "for-isabelle-2021-1";
-            src = fetchFromGitHub {
-              owner = "polyml";
-              repo = "polyml";
-              rev = "39d96a2def903ed019c6855e3b688df5070d633a";
-              sha256 = "sha256-S7d2Vr/nB+rCX9d4qQj4f7edVZKocKIjc5rrx9A/B4Q=";
-            };
-          });
-
-          java = openjdk17;
-          z3 = z3_4_4_0;
-        };
-
+        inherit (pkgs-1000teslas) isabelle;
         gcc-arm-linux-gnueabi = pkgs.callPackage ./gcc-arm-linux-gnueabi.nix { };
       };
       devShells = with pkgs;

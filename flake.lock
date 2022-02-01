@@ -65,6 +65,22 @@
         "type": "indirect"
       }
     },
+    "nixpkgs-1000teslas": {
+      "locked": {
+        "lastModified": 1643678606,
+        "narHash": "sha256-2bnUHGYneny99lISE6l9W64CGX9Vk1A3A0azganHmnM=",
+        "owner": "1000teslas",
+        "repo": "nixpkgs",
+        "rev": "5ca517bf80ad37d206a34e90fa2176a81f7eb6d0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "1000teslas",
+        "ref": "isabelle",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-master": {
       "locked": {
         "lastModified": 1643639519,
@@ -118,6 +134,7 @@
         "flake-utils": "flake-utils",
         "mach-nix": "mach-nix",
         "nixpkgs": "nixpkgs_2",
+        "nixpkgs-1000teslas": "nixpkgs-1000teslas",
         "nixpkgs-master": "nixpkgs-master"
       }
     }
