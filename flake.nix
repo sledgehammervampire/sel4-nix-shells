@@ -33,10 +33,11 @@
       packages = {
         inherit (pkgs-1000teslas) isabelle;
         gcc-arm-linux-gnueabi = pkgs.callPackage ./gcc-arm-linux-gnueabi.nix { };
+        gcc-aarch64-linux-gnu = pkgs.callPackage ./gcc-aarch64-linux-gnu.nix { };
       };
       devShells = with pkgs;
         let
-          myPython = (import mach-nix { inherit pkgs; python = "python39"; }).mkPython {
+          camkes-python = (import mach-nix { inherit pkgs; python = "python39"; }).mkPython {
             requirements = ''
               setuptools
               protobuf==3.12.4
@@ -47,7 +48,7 @@
             providers.libarchive-c = "nixpkgs";
           };
           sel4-deps = [
-            myPython
+            camkes-python
             bashInteractive
             gcc
             ccache
@@ -59,6 +60,7 @@
             packages.gcc-arm-linux-gnueabi
             qemu
             astyle
+            packages.gcc-aarch64-linux-gnu
           ];
           camkes-deps = sel4-deps ++ [
             stack
