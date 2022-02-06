@@ -39,8 +39,7 @@
       devShells = with pkgs;
         let
           mn = import mach-nix { inherit pkgs; python = "python39"; };
-          mk-sel4-deps = { python }: [
-            python
+          mk-sel4-deps = { python, qemu ? pkgs.qemu }: [ python qemu ] ++ [
             bashInteractive
             gcc
             ccache
@@ -50,7 +49,6 @@
             protobuf3_12
             dtc
             packages.gcc-arm-linux-gnueabi
-            qemu
             astyle
             packages.gcc-aarch64-linux-gnu
           ];
@@ -101,7 +99,27 @@
                   pyfdt==0.3
                 '';
               };
-            } ++ [ pandoc texlive.combined.scheme-full packages.gcc-arm-none-eabi ];
+              qemu = (qemu.overrideAttrs (old: {
+                src = fetchgit {
+                  url = "https://github.com/Xilinx/qemu.git";
+                  rev = "e353d497d8aff64b42575fa4799a2f43555e0502";
+                  sha256 = "sha256-2IiLw/RAjckRbu+Reb1L/saPYNuy8kl7TADLTPi06MA=";
+                  fetchSubmodules = true;
+                };
+                patches = [ ];
+                buildInputs = old.buildInputs ++ [ libgcrypt ];
+                configureFlags = [
+                  "--enable-fdt"
+                  "--disable-kvm"
+                  "--enable-gcrypt"
+                ];
+              })).override
+                { hostCpuTargets = [ "aarch64-softmmu" "microblazeel-softmmu" ]; };
+            } ++ [
+            pandoc
+            texlive.combined.scheme-full
+            packages.gcc-arm-none-eabi
+          ];
         in
         {
           sel4 = mkShell { buildInputs = sel4-deps; };
