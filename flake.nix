@@ -101,6 +101,7 @@
               };
             } ++ [
             stack
+            fakeroot
           ];
           l4v-deps = camkes-deps ++ [
             mlton
