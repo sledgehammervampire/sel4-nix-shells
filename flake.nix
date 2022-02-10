@@ -127,6 +127,5 @@
           l4v = mkShell { buildInputs = l4v-deps; };
           cp = mkShell { buildInputs = cp-deps; };
         };
-      devShell = devShells.camkes;
     });
 }
