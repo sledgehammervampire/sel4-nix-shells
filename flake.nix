@@ -8,6 +8,7 @@
     nixpkgs-master.url = github:nixos/nixpkgs/master;
     nixpkgs-1000teslas.url = github:1000teslas/nixpkgs/isabelle;
     rust-overlay.url = github:oxalica/rust-overlay;
+    nixpkgs-1809 = { url = github:nixos/nixpkgs/nixos-18.09; flake = false; };
   };
 
   outputs =
@@ -18,6 +19,7 @@
     , nixpkgs-master
     , nixpkgs-1000teslas
     , rust-overlay
+    , nixpkgs-1809
     }:
     flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
     let
@@ -149,7 +151,10 @@
         in
         {
           sel4 = mkShell { buildInputs = sel4-deps; };
-          camkes = mkShell { buildInputs = camkes-deps; };
+          camkes = mkShell {
+            buildInputs = camkes-deps;
+            NIX_PATH = "nixpkgs=${nixpkgs-1809}";
+          };
           l4v = mkShell { buildInputs = l4v-deps; };
           cp = mkShell { buildInputs = cp-deps; PYOXIDIZER_SYSTEM_RUST = 1; };
         };
