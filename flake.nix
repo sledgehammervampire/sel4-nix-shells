@@ -47,11 +47,11 @@
         '';
         gcc-aarch64-linux-gnu = with pkgs-aarch64; runCommand "gcc-aarch64-linux-gnu" { } ''
           mkdir -p $out/bin
-          cd ${stdenv.cc.cc}/bin
+          cd ${gcc10Stdenv.cc.cc}/bin
           for f in *; do
             ln -s $(realpath $f) $out/bin/''${f/-unknown/}
           done
-          cd ${stdenv.cc.bintools.bintools}/bin
+          cd ${gcc10Stdenv.cc.bintools.bintools}/bin
           for f in *; do
             ln -s $(realpath $f) $out/bin/''${f/-unknown/}
           done
