@@ -7,6 +7,7 @@
     flake-utils.url = github:numtide/flake-utils;
     nixpkgs-master.url = github:nixos/nixpkgs/master;
     nixpkgs-1000teslas.url = github:1000teslas/nixpkgs/isabelle;
+    rust-overlay.url = github:oxalica/rust-overlay;
   };
 
   outputs =
@@ -16,11 +17,12 @@
     , flake-utils
     , nixpkgs-master
     , nixpkgs-1000teslas
+    , rust-overlay
     }:
     flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
     let
       pkgs = import nixpkgs {
-        inherit system;
+        inherit system; overlays = [ (import rust-overlay) ];
       };
       pkgs-master = import nixpkgs-master {
         inherit system;
@@ -103,48 +105,53 @@
             packages.isabelle
             texlive.combined.scheme-full
           ];
-          cp-deps = mk-sel4-deps
-            {
-              python = mn.mkPython {
-                requirements = ''
-                  setuptools
-                  pyoxidizer==0.17.0
-                  mypy==0.910
-                  black==21.7b0
-                  flake8==3.9.2
-                  ply==3.11
-                  Jinja2==3.0.3
-                  PyYAML==6.0
-                  pyfdt==0.3
-                '';
-              };
-              qemu = (qemu.overrideAttrs (old: {
-                src = fetchgit {
-                  url = "https://github.com/Xilinx/qemu.git";
-                  rev = "e353d497d8aff64b42575fa4799a2f43555e0502";
-                  sha256 = "sha256-2IiLw/RAjckRbu+Reb1L/saPYNuy8kl7TADLTPi06MA=";
-                  fetchSubmodules = true;
+          cp-deps =
+            let rust = rust-bin.stable.latest.default.override {
+              targets = [ "x86_64-unknown-linux-musl" ];
+            }; in
+            mk-sel4-deps
+              {
+                python = mn.mkPython {
+                  requirements = ''
+                    setuptools
+                    pyoxidizer==0.17.0
+                    mypy==0.910
+                    black==21.7b0
+                    flake8==3.9.2
+                    ply==3.11
+                    Jinja2==3.0.3
+                    PyYAML==6.0
+                    pyfdt==0.3
+                  '';
                 };
-                patches = [ ];
-                buildInputs = old.buildInputs ++ [ libgcrypt ];
-                configureFlags = [
-                  "--enable-fdt"
-                  "--disable-kvm"
-                  "--enable-gcrypt"
-                ];
-              })).override
-                { hostCpuTargets = [ "aarch64-softmmu" "microblazeel-softmmu" ]; };
-            } ++ [
-            pandoc
-            texlive.combined.scheme-full
-            packages.gcc-arm-none-eabi
-          ];
+                qemu = (qemu.overrideAttrs (old: {
+                  src = fetchgit {
+                    url = "https://github.com/Xilinx/qemu.git";
+                    rev = "e353d497d8aff64b42575fa4799a2f43555e0502";
+                    sha256 = "sha256-2IiLw/RAjckRbu+Reb1L/saPYNuy8kl7TADLTPi06MA=";
+                    fetchSubmodules = true;
+                  };
+                  patches = [ ];
+                  buildInputs = old.buildInputs ++ [ libgcrypt ];
+                  configureFlags = [
+                    "--enable-fdt"
+                    "--disable-kvm"
+                    "--enable-gcrypt"
+                  ];
+                })).override
+                  { hostCpuTargets = [ "aarch64-softmmu" "microblazeel-softmmu" ]; };
+              } ++ [
+              pandoc
+              texlive.combined.scheme-full
+              packages.gcc-arm-none-eabi
+              rust
+            ];
         in
         {
           sel4 = mkShell { buildInputs = sel4-deps; };
           camkes = mkShell { buildInputs = camkes-deps; };
           l4v = mkShell { buildInputs = l4v-deps; };
-          cp = mkShell { buildInputs = cp-deps; };
+          cp = mkShell { buildInputs = cp-deps; PYOXIDIZER_SYSTEM_RUST = 1; };
         };
     });
 }
