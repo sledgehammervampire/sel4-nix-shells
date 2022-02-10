@@ -28,11 +28,22 @@
       pkgs-1000teslas = import nixpkgs-1000teslas {
         inherit system;
       };
+      pkgs-armv7 = import nixpkgs { inherit system; crossSystem = { config = "armv7a-unknown-linux-gnueabi"; }; };
     in
     rec {
       packages = {
         inherit (pkgs-1000teslas) isabelle;
-        gcc-arm-linux-gnueabi = pkgs.callPackage ./gcc-arm-linux-gnueabi.nix { };
+        gcc-arm-linux-gnueabi = with pkgs-armv7; runCommand "armv7-rename" { } ''
+          mkdir -p $out/bin
+          cd ${stdenv.cc.cc}/bin
+          for f in *; do
+            ln -s $(realpath $f) $out/bin/''${f/armv7a-unknown/arm}
+          done
+          cd ${stdenv.cc.bintools.bintools}/bin
+          for f in *; do
+            ln -s $(realpath $f) $out/bin/''${f/armv7a-unknown/arm}
+          done
+        '';
         gcc-aarch64-linux-gnu = pkgs.callPackage ./gcc-aarch64-linux-gnu.nix { };
         gcc-arm-none-eabi = pkgs.callPackage ./gcc-arm-none-eabi.nix { };
       };
