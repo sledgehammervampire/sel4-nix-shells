@@ -51,6 +51,8 @@
             packages.gcc-arm-linux-gnueabi
             astyle
             packages.gcc-aarch64-linux-gnu
+            ubootTools
+            cpio
           ];
           sel4-deps = mk-sel4-deps {
             python = mn.mkPython {
@@ -78,6 +80,7 @@
               };
             } ++ [
             stack
+            fakeroot
           ];
           l4v-deps = camkes-deps ++ [
             mlton
