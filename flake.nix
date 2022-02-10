@@ -29,11 +29,12 @@
         inherit system;
       };
       pkgs-armv7 = import nixpkgs { inherit system; crossSystem = { config = "armv7a-unknown-linux-gnueabi"; }; };
+      pkgs-aarch64 = import nixpkgs { inherit system; crossSystem = { config = "aarch64-unknown-linux-gnu"; }; };
     in
     rec {
       packages = {
         inherit (pkgs-1000teslas) isabelle;
-        gcc-arm-linux-gnueabi = with pkgs-armv7; runCommand "armv7-rename" { } ''
+        gcc-arm-linux-gnueabi = with pkgs-armv7; runCommand "gcc-arm-linux-gnueabi" { } ''
           mkdir -p $out/bin
           cd ${stdenv.cc.cc}/bin
           for f in *; do
@@ -44,7 +45,17 @@
             ln -s $(realpath $f) $out/bin/''${f/armv7a-unknown/arm}
           done
         '';
-        gcc-aarch64-linux-gnu = pkgs.callPackage ./gcc-aarch64-linux-gnu.nix { };
+        gcc-aarch64-linux-gnu = with pkgs-aarch64; runCommand "gcc-aarch64-linux-gnu" { } ''
+          mkdir -p $out/bin
+          cd ${stdenv.cc.cc}/bin
+          for f in *; do
+            ln -s $(realpath $f) $out/bin/''${f/-unknown/}
+          done
+          cd ${stdenv.cc.bintools.bintools}/bin
+          for f in *; do
+            ln -s $(realpath $f) $out/bin/''${f/-unknown/}
+          done
+        '';
         gcc-arm-none-eabi = pkgs.callPackage ./gcc-arm-none-eabi.nix { };
       };
       devShells = with pkgs;
@@ -62,6 +73,7 @@
             packages.gcc-arm-linux-gnueabi
             astyle
             packages.gcc-aarch64-linux-gnu
+            ubootTools
           ];
           sel4-deps = mk-sel4-deps {
             python = mn.mkPython {
