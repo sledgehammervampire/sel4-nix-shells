@@ -30,12 +30,28 @@
       };
     in
     rec {
-      packages = {
-        inherit (pkgs-1000teslas) isabelle;
-        gcc-arm-linux-gnueabi = pkgs.callPackage ./gcc-arm-linux-gnueabi.nix { };
-        gcc-aarch64-linux-gnu = pkgs.callPackage ./gcc-aarch64-linux-gnu.nix { };
-        gcc-arm-none-eabi = pkgs.callPackage ./gcc-arm-none-eabi.nix { };
-      };
+      packages =
+        let
+          mk-compiler = { nix-target-name, sel4-target-name ? nix-target-name }:
+            with import nixpkgs { inherit system; crossSystem = { config = nix-target-name; }; };
+            runCommand "gcc-${sel4-target-name}" { } ''
+              mkdir -p $out/bin
+              cd ${gcc10Stdenv.cc.cc}/bin
+              for f in *; do
+                ln -s $(realpath $f) $out/bin/''${f/${nix-target-name}/${sel4-target-name}}
+              done
+              cd ${gcc10Stdenv.cc.bintools.bintools}/bin
+              for f in *; do
+                ln -s $(realpath $f) $out/bin/''${f/${nix-target-name}/${sel4-target-name}}
+              done
+            '';
+        in
+        {
+          inherit (pkgs-1000teslas) isabelle;
+          gcc-arm-linux-gnueabi = mk-compiler { nix-target-name = "armv7a-unknown-linux-gnueabi"; sel4-target-name = "arm-linux-gnueabi"; };
+          gcc-aarch64-linux-gnu = mk-compiler { nix-target-name = "aarch64-unknown-linux-gnu"; sel4-target-name = "aarch64-linux-gnu"; };
+          gcc-arm-none-eabi = mk-compiler { nix-target-name = "aarch64-none-elf"; };
+        };
       devShells = with pkgs;
         let
           mn = import mach-nix { inherit pkgs; python = "python39"; };
