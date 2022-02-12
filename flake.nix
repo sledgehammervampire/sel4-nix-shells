@@ -155,13 +155,13 @@
           multilibMkShell = mkShell.override { stdenv = overrideCC gccStdenv (wrapCCMulti pkgs.${sel4-gcc-version}); };
         in
         {
-          sel4 = mkShell { buildInputs = sel4-deps; };
+          sel4 = multilibMkShell { buildInputs = sel4-deps; };
           camkes = multilibMkShell {
             buildInputs = camkes-deps;
             NIX_PATH = "nixpkgs=${nixpkgs-1809}";
           };
-          l4v = mkShell { buildInputs = l4v-deps; };
-          cp = mkShell { buildInputs = cp-deps; PYOXIDIZER_SYSTEM_RUST = 1; };
+          l4v = multilibMkShell { buildInputs = l4v-deps; };
+          cp = multilibMkShell { buildInputs = cp-deps; PYOXIDIZER_SYSTEM_RUST = 1; };
         };
     });
 }
