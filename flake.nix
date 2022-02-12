@@ -32,19 +32,23 @@
       pkgs-1000teslas = import nixpkgs-1000teslas {
         inherit system;
       };
+      sel4-gcc-version = "gcc10";
     in
     rec {
       packages =
         let
           mk-compiler = { nix-target-name, sel4-target-name ? nix-target-name }:
             with import nixpkgs { inherit system; crossSystem = { config = nix-target-name; }; };
+            let
+              sel4-gcc-stdenv = overrideCC gccStdenv buildPackages.${sel4-gcc-version};
+            in
             runCommand "gcc-${sel4-target-name}" { } ''
               mkdir -p $out/bin
-              cd ${gcc10Stdenv.cc.cc}/bin
+              cd ${sel4-gcc-stdenv.cc.cc}/bin
               for f in *; do
                 ln -s $(realpath $f) $out/bin/''${f/${nix-target-name}/${sel4-target-name}}
               done
-              cd ${gcc10Stdenv.cc.bintools.bintools}/bin
+              cd ${sel4-gcc-stdenv.cc.bintools.bintools}/bin
               for f in *; do
                 ln -s $(realpath $f) $out/bin/''${f/${nix-target-name}/${sel4-target-name}}
               done
@@ -61,7 +65,6 @@
           mn = import mach-nix { inherit pkgs; python = "python39"; };
           mk-sel4-deps = { python, qemu ? pkgs.qemu }: [ python qemu ] ++ [
             bashInteractive
-            gcc
             ccache
             cmake
             ninja
@@ -101,6 +104,7 @@
             } ++ [
             stack
             fakeroot
+            minicom
           ];
           l4v-deps = camkes-deps ++ [
             mlton
@@ -148,10 +152,11 @@
               packages.gcc-arm-none-eabi
               rust
             ];
+          multilibMkShell = mkShell.override { stdenv = overrideCC gccStdenv (wrapCCMulti pkgs.${sel4-gcc-version}); };
         in
         {
           sel4 = mkShell { buildInputs = sel4-deps; };
-          camkes = mkShell {
+          camkes = multilibMkShell {
             buildInputs = camkes-deps;
             NIX_PATH = "nixpkgs=${nixpkgs-1809}";
           };
