@@ -37,10 +37,11 @@
     rec {
       packages =
         let
-          mk-compiler = { nix-target-name, sel4-target-name ? nix-target-name }:
-            with import nixpkgs { inherit system; crossSystem = { config = nix-target-name; }; };
+          mk-compiler = { nix-target-name, sel4-target-name ? nix-target-name, extraConfig ? { }, enableMultilib ? false }:
+            with import nixpkgs { inherit system; crossSystem = { config = nix-target-name; } // extraConfig; };
             let
-              sel4-gcc-stdenv = overrideCC gccStdenv buildPackages.${sel4-gcc-version};
+              sel4-gcc = buildPackages.wrapCC (buildPackages.${sel4-gcc-version}.cc.override { inherit enableMultilib; });
+              sel4-gcc-stdenv = overrideCC gccStdenv sel4-gcc;
             in
             runCommand "gcc-${sel4-target-name}" { } ''
               mkdir -p $out/bin
@@ -59,6 +60,12 @@
           gcc-arm-linux-gnueabi = mk-compiler { nix-target-name = "armv7a-unknown-linux-gnueabi"; sel4-target-name = "arm-linux-gnueabi"; };
           gcc-aarch64-linux-gnu = mk-compiler { nix-target-name = "aarch64-unknown-linux-gnu"; sel4-target-name = "aarch64-linux-gnu"; };
           gcc-arm-none-eabi = mk-compiler { nix-target-name = "aarch64-none-elf"; };
+          gcc-riscv64-unknown-elf = mk-compiler {
+            nix-target-name = "riscv64-none-elf";
+            sel4-target-name = "riscv64-unknown-elf";
+            extraConfig = { gcc.arch = "rv64gc"; };
+            enableMultilib = true;
+          };
         };
       devShells = with pkgs;
         let
@@ -76,6 +83,7 @@
             packages.gcc-aarch64-linux-gnu
             ubootTools
             cpio
+            packages.gcc-riscv64-unknown-elf
           ];
           sel4-deps = mk-sel4-deps {
             python = mn.mkPython {
