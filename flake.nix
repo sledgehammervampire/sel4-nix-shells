@@ -43,7 +43,7 @@
               sel4-gcc = buildPackages.wrapCC (buildPackages.${sel4-gcc-version}.cc.override { inherit enableMultilib; });
               sel4-gcc-stdenv = overrideCC gccStdenv sel4-gcc;
             in
-            runCommand "gcc-${sel4-target-name}" { } ''
+            runCommand "${sel4-gcc-version}-${sel4-target-name}" { } ''
               mkdir -p $out/bin
               cd ${sel4-gcc-stdenv.cc.cc}/bin
               for f in *; do
