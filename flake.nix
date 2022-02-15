@@ -37,10 +37,10 @@
     rec {
       packages =
         let
-          mk-compiler = { nix-target-name, sel4-target-name ? nix-target-name, extraConfig ? { }, enableMultilib ? false }:
-            with import nixpkgs { inherit system; crossSystem = { config = nix-target-name; } // extraConfig; };
+          mk-compiler = { nix-target-name, sel4-target-name ? nix-target-name, enableMultilib ? false, ccOverrideAttrs ? (_: { }) }:
+            with import nixpkgs { inherit system; crossSystem = { config = nix-target-name; }; };
             let
-              sel4-gcc = buildPackages.wrapCC (buildPackages.${sel4-gcc-version}.cc.override { inherit enableMultilib; });
+              sel4-gcc = buildPackages.wrapCC ((buildPackages.${sel4-gcc-version}.cc.override { inherit enableMultilib; }).overrideAttrs ccOverrideAttrs);
               sel4-gcc-stdenv = overrideCC gccStdenv sel4-gcc;
             in
             runCommand "${sel4-gcc-version}-${sel4-target-name}" { } ''
@@ -63,8 +63,12 @@
           gcc-riscv64-unknown-elf = mk-compiler {
             nix-target-name = "riscv64-none-elf";
             sel4-target-name = "riscv64-unknown-elf";
-            extraConfig = { gcc.arch = "rv64gc"; };
             enableMultilib = true;
+            ccOverrideAttrs = _: {
+              prePatch = ''
+                cp ${./riscv-t-elf-multilib} gcc/config/riscv/t-elf-multilib
+              '';
+            };
           };
         };
       devShells = with pkgs;
@@ -112,6 +116,9 @@
             } ++ [
             stack
             fakeroot
+          ] ++
+          # not necessary for building, only for debugging
+          [
             minicom
           ];
           l4v-deps = camkes-deps ++ [
