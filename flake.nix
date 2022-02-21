@@ -116,10 +116,6 @@
             } ++ [
             stack
             fakeroot
-          ] ++
-          # not necessary for building, only for debugging
-          [
-            minicom
           ];
           l4v-deps = camkes-deps ++ [
             mlton
