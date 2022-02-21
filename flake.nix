@@ -173,6 +173,7 @@
           };
           l4v = multilibMkShell { buildInputs = l4v-deps; };
           cp = multilibMkShell { buildInputs = cp-deps; PYOXIDIZER_SYSTEM_RUST = 1; };
+          cp-dev = devShells.cp.overrideAttrs (old: { buildInputs = old.buildInputs ++ [ framac ]; });
         };
     });
 }
