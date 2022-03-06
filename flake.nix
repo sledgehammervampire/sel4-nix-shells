@@ -70,6 +70,22 @@
               '';
             };
           };
+          xilinx-qemu = with pkgs; (qemu.overrideAttrs (old: {
+            src = fetchgit {
+              url = "https://github.com/Xilinx/qemu.git";
+              rev = "e353d497d8aff64b42575fa4799a2f43555e0502";
+              sha256 = "sha256-2IiLw/RAjckRbu+Reb1L/saPYNuy8kl7TADLTPi06MA=";
+              fetchSubmodules = true;
+            };
+            patches = [ ];
+            buildInputs = old.buildInputs ++ [ libgcrypt ];
+            configureFlags = [
+              "--enable-fdt"
+              "--disable-kvm"
+              "--enable-gcrypt"
+            ];
+          })).override
+            { hostCpuTargets = [ "aarch64-softmmu" "microblazeel-softmmu" ]; };
         };
       devShells = with pkgs;
         let
@@ -141,22 +157,7 @@
                     pyfdt==0.3
                   '';
                 };
-                qemu = (qemu.overrideAttrs (old: {
-                  src = fetchgit {
-                    url = "https://github.com/Xilinx/qemu.git";
-                    rev = "e353d497d8aff64b42575fa4799a2f43555e0502";
-                    sha256 = "sha256-2IiLw/RAjckRbu+Reb1L/saPYNuy8kl7TADLTPi06MA=";
-                    fetchSubmodules = true;
-                  };
-                  patches = [ ];
-                  buildInputs = old.buildInputs ++ [ libgcrypt ];
-                  configureFlags = [
-                    "--enable-fdt"
-                    "--disable-kvm"
-                    "--enable-gcrypt"
-                  ];
-                })).override
-                  { hostCpuTargets = [ "aarch64-softmmu" "microblazeel-softmmu" ]; };
+                qemu = packages.xilinx-qemu;
               } ++ [
               pandoc
               texlive.combined.scheme-full
