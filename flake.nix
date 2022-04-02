@@ -155,6 +155,12 @@
                     Jinja2==3.0.3
                     PyYAML==6.0
                     pyfdt==0.3
+                    six==1.16.0
+                    aenum==3.1.8
+                    future==0.18.2
+                    pyelftools==0.27
+                    sortedcontainers==2.4.0
+                    jsonschema==4.4.0
                   '';
                 };
                 qemu = packages.xilinx-qemu;
@@ -163,6 +169,7 @@
               texlive.combined.scheme-full
               packages.gcc-arm-none-eabi
               rust
+              stack
             ];
           multilibMkShell = mkShell.override { stdenv = overrideCC gccStdenv (wrapCCMulti pkgs.${sel4-gcc-version}); };
         in
@@ -170,10 +177,16 @@
           sel4 = multilibMkShell { buildInputs = sel4-deps; };
           camkes = multilibMkShell {
             buildInputs = camkes-deps;
+            # for stack
             NIX_PATH = "nixpkgs=${nixpkgs-1809}";
           };
           l4v = multilibMkShell { buildInputs = l4v-deps; };
-          cp = multilibMkShell { buildInputs = cp-deps; PYOXIDIZER_SYSTEM_RUST = 1; };
+          cp = multilibMkShell {
+            buildInputs = cp-deps;
+            PYOXIDIZER_SYSTEM_RUST = 1;
+            # for stack
+            NIX_PATH = "nixpkgs=${nixpkgs-1809}";
+          };
         };
     });
 }
