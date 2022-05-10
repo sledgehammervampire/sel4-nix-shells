@@ -132,6 +132,7 @@
             } ++ [
             stack
             fakeroot
+            gmp.out
           ];
           l4v-deps = camkes-deps ++ [
             mlton
@@ -161,7 +162,9 @@
                     pyelftools==0.27
                     sortedcontainers==2.4.0
                     jsonschema==4.4.0
+                    sel4-deps
                   '';
+                  providers.libarchive-c = "nixpkgs";
                 };
                 qemu = packages.xilinx-qemu;
               } ++ [
@@ -170,6 +173,7 @@
               packages.gcc-arm-none-eabi
               rust
               stack
+              gmp.out
             ];
           multilibMkShell = mkShell.override { stdenv = overrideCC gccStdenv (wrapCCMulti pkgs.${sel4-gcc-version}); };
         in
