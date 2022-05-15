@@ -90,21 +90,14 @@
       devShells = with pkgs;
         let
           mn = import mach-nix { inherit pkgs; python = "python39"; };
-          mk-sel4-deps = { python, qemu ? pkgs.qemu }: [ python qemu ] ++ [
-            bashInteractive
-            ccache
-            cmake
-            ninja
-            libxml2
-            protobuf3_12
-            dtc
-            packages.gcc-arm-linux-gnueabi
-            astyle
-            packages.gcc-aarch64-linux-gnu
-            ubootTools
-            cpio
-            packages.gcc-riscv64-unknown-elf
-          ];
+          mk-sel4-deps = inputs@{ python, ... }:
+            lib.attrValues
+              ({
+                inherit (pkgs) qemu cmake ccache ninja libxml2 dtc astyle ubootTools cpio;
+                inherit (packages) gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu gcc-riscv64-unknown-elf;
+                protobuf = protobuf3_12;
+                bash = bashInteractive;
+              } // inputs);
           sel4-deps = mk-sel4-deps {
             python = mn.mkPython {
               requirements = ''
