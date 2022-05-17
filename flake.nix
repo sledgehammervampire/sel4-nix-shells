@@ -89,7 +89,11 @@
         };
       devShells = with pkgs;
         let
-          mn = import mach-nix { inherit pkgs; python = "python39"; };
+          mn = import mach-nix {
+            inherit pkgs; python = "python39";
+            pypiDataRev = "e35aae825e29b085757f63d334aa0a4d722e1c03";
+            pypiDataSha256 = "sha256:1ygwjb1922sj63adlrrfspkpx8p5l0kr053mx7zql4f1l2p32wkk";
+          };
           mk-sel4-deps = inputs@{ python, ... }:
             lib.attrValues
               ({
@@ -149,14 +153,27 @@
                     Jinja2==3.0.3
                     PyYAML==6.0
                     pyfdt==0.3
-                    six==1.16.0
-                    aenum==3.1.8
-                    future==0.18.2
-                    pyelftools==0.27
-                    sortedcontainers==2.4.0
                     jsonschema==4.4.0
                     sel4-deps
                   '';
+                  packagesExtra = [
+                    (
+                      let
+                        src = builtins.fetchGit {
+                          url = "https://github.com/1000teslas/capdl/";
+                          ref = "package";
+                          rev = "2674738eecf1ee676bc11b80031fd8e44eb25bf9";
+                        };
+                      in
+                      mn.buildPythonPackage {
+                        inherit src;
+                        pname = "capdl";
+                        version = "0.2.1-dev";
+                        sourceRoot = "source/python-capdl-tool";
+                        requirements = builtins.readFile "${src}/python-capdl-tool/requirements.txt";
+                      }
+                    )
+                  ];
                   providers.libarchive-c = "nixpkgs";
                 };
                 qemu = packages.xilinx-qemu;
