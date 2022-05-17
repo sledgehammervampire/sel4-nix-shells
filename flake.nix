@@ -176,7 +176,6 @@
                   ];
                   providers.libarchive-c = "nixpkgs";
                 };
-                qemu = packages.xilinx-qemu;
               } ++ [
               pandoc
               texlive.combined.scheme-full
