@@ -137,9 +137,14 @@
             texlive.combined.scheme-full
           ];
           cp-deps =
-            let rust = rust-bin.stable.latest.default.override {
-              targets = [ "x86_64-unknown-linux-musl" ];
-            }; in
+            let
+              rust = rust-bin.stable.latest.default.override {
+                targets = [ "x86_64-unknown-linux-musl" ];
+              };
+              tex = texlive.combine {
+                inherit (texlive) scheme-medium titlesec;
+              };
+            in
             mk-sel4-deps
               {
                 python = mn.mkPython {
@@ -178,7 +183,7 @@
                 };
               } ++ [
               pandoc
-              texlive.combined.scheme-full
+              tex
               packages.gcc-arm-none-eabi
               rust
               stack
