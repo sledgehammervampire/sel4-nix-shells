@@ -105,10 +105,10 @@
           sel4-deps = mk-sel4-deps {
             python = mn.mkPython {
               requirements = ''
-                setuptools
+                setuptools==57.2.0
                 protobuf==3.12.4
-                sel4-deps
-                nose
+                sel4-deps==0.3.1
+                nose==1.3.7
               '';
               providers.unittest2 = "nixpkgs";
               providers.libarchive-c = "nixpkgs";
@@ -118,10 +118,10 @@
             {
               python = mn.mkPython {
                 requirements = ''
-                  setuptools
+                  setuptools==57.2.0
                   protobuf==3.12.4
-                  camkes-deps
-                  nose
+                  camkes-deps==0.7.3
+                  nose==1.3.7
                 '';
                 providers.unittest2 = "nixpkgs";
                 providers.libarchive-c = "nixpkgs";
@@ -149,7 +149,7 @@
               {
                 python = mn.mkPython {
                   requirements = ''
-                    setuptools
+                    setuptools==57.2.0
                     pyoxidizer==0.17.0
                     mypy==0.910
                     black==21.7b0
@@ -159,7 +159,8 @@
                     PyYAML==6.0
                     pyfdt==0.3
                     jsonschema==4.4.0
-                    sel4-deps
+                    sel4-deps==0.3.1
+                    lief==0.12.1
                   '';
                   packagesExtra = [
                     (
