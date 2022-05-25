@@ -160,7 +160,6 @@
                     pyfdt==0.3
                     jsonschema==4.4.0
                     sel4-deps==0.3.1
-                    lief==0.12.1
                   '';
                   packagesExtra = [
                     (
@@ -182,6 +181,7 @@
                   ];
                   providers.libarchive-c = "nixpkgs";
                 };
+                qemu = packages.xilinx-qemu;
               } ++ [
               pandoc
               tex
@@ -189,6 +189,7 @@
               rust
               stack
               gmp.out
+              gdb
             ];
           multilibMkShell = mkShell.override { stdenv = overrideCC gccStdenv (wrapCCMulti pkgs.${sel4-gcc-version}); };
         in
