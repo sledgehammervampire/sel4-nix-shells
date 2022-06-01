@@ -2,13 +2,14 @@
   description = "seL4 development shells";
 
   inputs = {
-    nixpkgs.url = github:nixos/nixpkgs/nixos-21.11;
+    nixpkgs.url = github:nixos/nixpkgs/nixos-22.05;
     mach-nix.url = github:DavHau/mach-nix;
     flake-utils.url = github:numtide/flake-utils;
     nixpkgs-master.url = github:nixos/nixpkgs/master;
     nixpkgs-1000teslas.url = github:1000teslas/nixpkgs/isabelle;
     rust-overlay.url = github:oxalica/rust-overlay;
     nixpkgs-1809 = { url = github:nixos/nixpkgs/nixos-18.09; flake = false; };
+    nixpkgs-2111.url = github:nixos/nixpkgs/nixos-21.11;
   };
 
   outputs =
@@ -20,6 +21,7 @@
     , nixpkgs-1000teslas
     , rust-overlay
     , nixpkgs-1809
+    , nixpkgs-2111
     }:
     flake-utils.lib.eachDefaultSystem (system:
     let
@@ -33,6 +35,9 @@
         inherit system;
       };
       sel4-gcc-version = "gcc10";
+      pkgs-2111 = import nixpkgs-2111 {
+        inherit system;
+      };
     in
     rec {
       packages =
@@ -70,7 +75,7 @@
               '';
             };
           };
-          xilinx-qemu = with pkgs; (qemu.overrideAttrs (old: {
+          xilinx-qemu = with pkgs-2111; (qemu.overrideAttrs (old: {
             src = fetchgit {
               url = "https://github.com/Xilinx/qemu.git";
               rev = "e353d497d8aff64b42575fa4799a2f43555e0502";
@@ -86,42 +91,25 @@
             ];
           })).override
             { hostCpuTargets = [ "aarch64-softmmu" "microblazeel-softmmu" ]; };
-          corrosion = pkgs.corrosion.overrideAttrs (old: with pkgs; rec {
-            version = "0.2.1";
-            src = fetchFromGitHub {
-              owner = "corrosion-rs";
-              repo = "corrosion";
-              rev = "v${version}";
-              sha256 = "sha256-nJ4ercNykECDBqecuL8cdCl4DHgbgIUmbiFBG/jiOaA=";
-            };
-            patches = [ ];
-            cargoDeps = rustPlatform.fetchCargoTarball {
-              inherit src;
-              sourceRoot = "${src.name}/${old.cargoRoot}";
-              name = "${old.pname}-${version}";
-              sha256 = "sha256-4JVbHYlMOKztWPYW7tXQdvdNh/ygfpi0CY6Ly93VxsI=";
-            };
-          });
         };
       devShells = with pkgs;
         let
           mn = import mach-nix {
             inherit pkgs; python = "python39";
-            pypiDataRev = "e35aae825e29b085757f63d334aa0a4d722e1c03";
-            pypiDataSha256 = "sha256:1ygwjb1922sj63adlrrfspkpx8p5l0kr053mx7zql4f1l2p32wkk";
+            pypiDataRev = "317719c305a4b1bd97cfec9366d118228fefa690";
+            pypiDataSha256 = "sha256:0a9qi9wqj5jw09f3widpd6rpzvwrhvw4cw8mqd063yp009l91siv";
           };
           mk-sel4-deps = inputs@{ python, ... }:
             lib.attrValues
               ({
-                inherit (pkgs) qemu cmake ccache ninja libxml2 dtc astyle ubootTools cpio;
+                inherit (pkgs) qemu cmake ccache ninja libxml2 dtc astyle ubootTools cpio protobuf;
                 inherit (packages) gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu gcc-riscv64-unknown-elf;
-                protobuf = protobuf3_12;
                 bash = bashInteractive;
               } // inputs);
           sel4-deps = mk-sel4-deps {
             python = mn.mkPython {
               requirements = ''
-                setuptools==57.2.0
+                setuptools==61.2.0
                 protobuf==3.12.4
                 sel4-deps==0.3.1
                 nose==1.3.7
@@ -134,7 +122,7 @@
             {
               python = mn.mkPython {
                 requirements = ''
-                  setuptools==57.2.0
+                  setuptools==61.2.0
                   protobuf==3.12.4
                   camkes-deps==0.7.3
                   nose==1.3.7
@@ -165,7 +153,7 @@
               {
                 python = mn.mkPython {
                   requirements = ''
-                    setuptools==57.2.0
+                    setuptools==61.2.0
                     pyoxidizer==0.17.0
                     mypy==0.910
                     black==21.7b0
@@ -216,7 +204,7 @@
             in
             sel4-deps ++ [
               rust-nightly
-              packages.corrosion
+              corrosion
               cargo-edit
               llvmPackages_latest.libclang.lib
             ];
