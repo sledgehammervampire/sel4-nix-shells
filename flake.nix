@@ -86,6 +86,22 @@
             ];
           })).override
             { hostCpuTargets = [ "aarch64-softmmu" "microblazeel-softmmu" ]; };
+          corrosion = pkgs.corrosion.overrideAttrs (old: with pkgs; rec {
+            version = "0.2.1";
+            src = fetchFromGitHub {
+              owner = "corrosion-rs";
+              repo = "corrosion";
+              rev = "v${version}";
+              sha256 = "sha256-nJ4ercNykECDBqecuL8cdCl4DHgbgIUmbiFBG/jiOaA=";
+            };
+            patches = [ ];
+            cargoDeps = rustPlatform.fetchCargoTarball {
+              inherit src;
+              sourceRoot = "${src.name}/${old.cargoRoot}";
+              name = "${old.pname}-${version}";
+              sha256 = "sha256-4JVbHYlMOKztWPYW7tXQdvdNh/ygfpi0CY6Ly93VxsI=";
+            };
+          });
         };
       devShells = with pkgs;
         let
@@ -191,6 +207,19 @@
               gmp.out
               gdb
             ];
+          sel4-rs-deps =
+            let
+              rust-nightly = rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override {
+                extensions = [ "rust-src" ];
+                targets = [ "aarch64-unknown-none" ];
+              });
+            in
+            sel4-deps ++ [
+              rust-nightly
+              packages.corrosion
+              cargo-edit
+              llvmPackages_latest.libclang.lib
+            ];
           multilibMkShell = mkShell.override { stdenv = overrideCC gccStdenv (wrapCCMulti pkgs.${sel4-gcc-version}); };
         in
         {
@@ -206,6 +235,10 @@
             PYOXIDIZER_SYSTEM_RUST = 1;
             # for stack
             NIX_PATH = "nixpkgs=${nixpkgs-1809}";
+          };
+          sel4-rs = multilibMkShell {
+            buildInputs = sel4-rs-deps;
+            LIBCLANG_PATH = "${llvmPackages_latest.libclang.lib}/lib";
           };
         };
     });
