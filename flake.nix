@@ -208,6 +208,10 @@
               cargo-edit
               llvmPackages_latest.libclang.lib
             ];
+          aos-deps = sel4-rs-deps ++ [
+            websocat
+            curl
+          ];
           multilibMkShell = mkShell.override { stdenv = overrideCC gccStdenv (wrapCCMulti pkgs.${sel4-gcc-version}); };
         in
         {
@@ -226,6 +230,10 @@
           };
           sel4-rs = multilibMkShell {
             buildInputs = sel4-rs-deps;
+            LIBCLANG_PATH = "${llvmPackages_latest.libclang.lib}/lib";
+          };
+          aos = multilibMkShell {
+            buildInputs = aos-deps;
             LIBCLANG_PATH = "${llvmPackages_latest.libclang.lib}/lib";
           };
         };
