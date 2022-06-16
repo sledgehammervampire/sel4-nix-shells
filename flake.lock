@@ -96,23 +96,6 @@
         "type": "github"
       }
     },
-    "nixpkgs-1809": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1558254092,
-        "narHash": "sha256-5v6XuO9dOVpB3ZGNyDvLqOvCnzlyyvscTYbNiQouSZo=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "a7e559a5504572008567383c3dc8e142fa7a8633",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-18.09",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs-2111": {
       "locked": {
         "lastModified": 1653996475,
@@ -125,6 +108,22 @@
       "original": {
         "owner": "nixos",
         "ref": "nixos-21.11",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-2205": {
+      "locked": {
+        "lastModified": 1655278232,
+        "narHash": "sha256-H6s7tnHYiDKFCcLADS4sl1sUq0dDJuRQXCieguk/6SA=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "8b538fcb329a7bc3d153962f17c509ee49166973",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-22.05",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -199,8 +198,8 @@
         "mach-nix": "mach-nix",
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-1000teslas": "nixpkgs-1000teslas",
-        "nixpkgs-1809": "nixpkgs-1809",
         "nixpkgs-2111": "nixpkgs-2111",
+        "nixpkgs-2205": "nixpkgs-2205",
         "nixpkgs-master": "nixpkgs-master",
         "rust-overlay": "rust-overlay"
       }
