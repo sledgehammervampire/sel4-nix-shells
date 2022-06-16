@@ -138,7 +138,7 @@
           l4v-deps = camkes-deps ++ [
             mlton
             packages.isabelle
-            texlive.combined.scheme-full
+            texlive.combined.scheme-medium
           ];
           cp-deps =
             let
