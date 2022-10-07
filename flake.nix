@@ -91,6 +91,10 @@
             ];
           })).override
             { hostCpuTargets = [ "aarch64-softmmu" "microblazeel-softmmu" ]; };
+          rust-nightly = pkgs.rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override {
+            extensions = [ "rust-src" ];
+            targets = [ "aarch64-unknown-none" ];
+          });
         };
       devShells = with pkgs;
         let
@@ -171,7 +175,7 @@
                         src = builtins.fetchGit {
                           url = "https://github.com/1000teslas/capdl/";
                           ref = "package";
-                          rev = "2674738eecf1ee676bc11b80031fd8e44eb25bf9";
+                          rev = "8f6468ffd1b7a4b0f198b4db1ec137aef5788ba3";
                         };
                       in
                       mn.buildPythonPackage {
@@ -195,23 +199,29 @@
               gmp.out
               gdb
             ];
-          sel4-rs-deps =
-            let
-              rust-nightly = rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override {
-                extensions = [ "rust-src" ];
-                targets = [ "aarch64-unknown-none" ];
-              });
-            in
-            sel4-deps ++ [
-              rust-nightly
+          aos-deps =
+            mk-sel4-deps
+              {
+                python = mn.mkPython {
+                  requirements = ''
+                    setuptools==61.2.0
+                    protobuf==3.12.4
+                    sel4-deps==0.3.1
+                    nose==1.3.7
+                    tempita==0.5.2
+                  '';
+                  providers.libarchive-c = "nixpkgs";
+                };
+                gcc-arm-linux-gnueabi = null;
+                gcc-riscv64-unknown-elf = null;
+              } ++ [
+              packages.rust-nightly
               corrosion
               cargo-edit
+              websocat
+              curl
               llvmPackages_latest.libclang.lib
             ];
-          aos-deps = sel4-rs-deps ++ [
-            websocat
-            curl
-          ];
           multilibMkShell = mkShell.override { stdenv = overrideCC gccStdenv (wrapCCMulti pkgs.${sel4-gcc-version}); };
         in
         {
@@ -228,11 +238,7 @@
             # for stack
             NIX_PATH = "nixpkgs=${nixpkgs-2205}";
           };
-          sel4-rs = multilibMkShell {
-            buildInputs = sel4-rs-deps;
-            LIBCLANG_PATH = "${llvmPackages_latest.libclang.lib}/lib";
-          };
-          aos = multilibMkShell {
+          aos = mkShell {
             buildInputs = aos-deps;
             LIBCLANG_PATH = "${llvmPackages_latest.libclang.lib}/lib";
           };
