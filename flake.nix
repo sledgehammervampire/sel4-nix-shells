@@ -34,7 +34,7 @@
       pkgs-1000teslas = import nixpkgs-1000teslas {
         inherit system;
       };
-      sel4-gcc-version = "gcc10";
+      sel4-gcc-version = "gcc12";
       pkgs-2111 = import nixpkgs-2111 {
         inherit system;
       };
