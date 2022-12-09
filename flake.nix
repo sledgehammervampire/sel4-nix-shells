@@ -34,10 +34,8 @@
       pkgs-1000teslas = import nixpkgs-1000teslas {
         inherit system;
       };
-      sel4-gcc-version = "gcc12";
-      pkgs-2111 = import nixpkgs-2111 {
-        inherit system;
-      };
+      sel4-gcc-version = "gcc10";
+      pkgs-2111 = nixpkgs-2111.legacyPackages.${system};
     in
     rec {
       packages =
@@ -121,6 +119,7 @@
               providers.unittest2 = "nixpkgs";
               providers.libarchive-c = "nixpkgs";
             };
+            protobuf = pkgs-2111.protobuf3_12;
           };
           camkes-deps = mk-sel4-deps
             {
@@ -139,10 +138,9 @@
             fakeroot
             gmp.out
           ];
-          l4v-deps = camkes-deps ++ [
+          l4v-deps = sel4-deps ++ [
             mlton
-            packages.isabelle
-            texlive.combined.scheme-medium
+            texlive.combined.scheme-full
           ];
           cp-deps =
             let
